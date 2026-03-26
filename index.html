@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Plus Buddy - Home</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="stylez.css">
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+    import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+    import { getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc, query, where, addDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+    
+    // Your Firebase config
+    const firebaseConfig = {
+    apiKey: "AIzaSyDutyjFDj_GfaBxbn4tMwhDg3iCTQ2Z818",
+    authDomain: "aplusbuddy-a6620.firebaseapp.com",
+    projectId: "aplusbuddy-a6620",
+    storageBucket: "aplusbuddy-a6620.firebasestorage.app",
+    messagingSenderId: "593164256153",
+    appId: "1:593164256153:web:2e1d1934c3565a74074908",
+    measurementId: "G-504M8R7ZVS"
+};
+    
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    
+    // Make them available globally
+    window.firebaseAuth = auth;
+    window.firebaseDB = db;
+    window.firebaseModules = {
+        collection, doc, getDoc, getDocs, setDoc, updateDoc, query, where, addDoc
+    };
+</script>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-content">
+            <h1 class="loading-title">A Plus Buddy</h1>
+            <p class="loading-subtitle">Past Questions And Guide</p>
+        </div>
+        <div id="waveProgress" class="wave-progress">
+            <div class="wave-progress-fill"></div>
+        </div>
+        <!-- Auth Button Container -->
+        <div id="authContainer" class="auth-container" style="display: none;">
+            <button id="googleSignInBtn" class="google-signin-btn">
+                <i class="fab fa-google"></i> Sign in with Google
+            </button>
+        </div>
+        <button id="continueBtn" class="continue-btn hidden">
+            <i class="fas fa-play-circle"></i> Continue
+        </button>
+    </div>
+
+    <!-- Header (visible after loading) -->
+    <header id="mainHeader" class="header hidden">
+        <div class="logo-section">
+            <div class="logo">APB</div>
+            <div class="logo-text">A+ <span>BUDDY</span></div>
+        </div>
+        <div class="header-actions">
+            <div id="userBadge" class="user-badge">
+                <i class="fas fa-user"></i>
+                <span id="userName">Guest</span>
+                <span id="userTier" class="badge free">FREE</span>
+            </div>
+            <button id="homeNavBtn" class="header-btn home-btn">
+                <i class="fas fa-home"></i> Home
+            </button>
+            <button id="logoutBtn" class="header-btn logout-btn hidden">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </header>
+
+    <!-- Rest of your existing HTML remains the SAME -->
+    <!-- Home Page -->
+    <div id="homePage" class="home-page hidden">
+        <h1 class="home-title">Welcome to A Plus Buddy</h1>
+        <button id="takeQuizBtn" class="take-quiz-btn">Start Quiz</button>
+    </div>
+
+    <!-- Subject Selection Page -->
+    <div id="subjectSelectionPage" class="subject-selection hidden">
+        <h2 class="page-title">Select Subject</h2>
+        <div class="search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="subjectSearchInput" class="search-input" placeholder="Search subjects...">
+        </div>
+        <div id="subjectList" class="subject-list">
+            <!-- Subjects will be dynamically added here -->
+        </div>
+    </div>
+
+    <!-- Quiz Type Selection Page -->
+    <div id="quizTypePage" class="quiz-type-page hidden">
+        <div class="quiz-type-header">
+            <button class="back-btn" id="backToSubjectBtn">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2 id="quizTypeSubject" class="page-title">Select Quiz Type</h2>
+        </div>
+        
+        <div class="quiz-type-container">
+            <div class="type-selector">
+                <label for="quizTypeSelect" class="form-label">Select Quiz Type</label>
+                <select id="quizTypeSelect" class="form-select">
+                    <option value="random">Random Quiz</option>
+                    <option value="topic">Topic-Based Quiz</option>
+                </select>
+            </div>
+            
+            <div id="randomQuizGrid" class="quiz-grid"></div>
+            <div id="topicGrid" class="topic-grid hidden"></div>
+            <div id="noTopicsMessage" class="no-topics-message hidden">
+                <i class="fas fa-info-circle"></i>
+                <p>No topic-based quizzes available for this subject.</p>
+                <p>Please select "Random Quiz" instead.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Topic Quiz Selection Page -->
+    <div id="topicQuizPage" class="quiz-selection hidden">
+        <div class="quiz-type-header">
+            <button class="back-btn" id="backToTopicsBtn">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h2 id="topicTitle" class="page-title">Select Quiz</h2>
+        </div>
+        <div class="quiz-grid" id="topicQuizGrid"></div>
+    </div>
+
+    <!-- Quiz Screen -->
+    <div id="quizScreen" class="quiz-screen hidden">
+        <div class="quiz-header">
+            <div class="quiz-subject-title" id="quizSubjectTitle">Mathematics</div>
+            <div class="quiz-timer" id="quizTimer">∞</div>
+        </div>
+        
+        <div class="question-grid-container">
+            <div class="question-grid-title">Questions</div>
+            <div id="questionGrid" class="question-grid"></div>
+        </div>
+        
+        <div class="question-container">
+            <div class="question-number" id="questionNumber">Question 1 of 50</div>
+            <div class="question-text" id="questionText"></div>
+            <div id="optionsContainer" class="options-container"></div>
+            <div class="nav-buttons">
+                <button id="prevBtn" class="nav-btn prev-btn">Previous</button>
+                <button id="nextBtn" class="nav-btn next-btn">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quiz Setup Modal -->
+    <div id="setupModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Quiz Setup</h3>
+                <button class="modal-close" id="closeSetupModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="quizSetupForm">
+                    <div class="form-group">
+                        <label class="form-label" id="selectedQuizLabel"></label>
+                    </div>
+                    <div class="form-group">
+                        <label for="durationSelect" class="form-label">Duration</label>
+                        <select id="durationSelect" class="form-select">
+                            <option value="0">Default (No Limit)</option>
+                            <option value="5">5 minutes</option>
+                            <option value="10">10 minutes</option>
+                            <option value="15">15 minutes</option>
+                            <option value="20">20 minutes</option>
+                            <option value="30">30 minutes</option>
+                            <option value="45">45 minutes</option>
+                            <option value="60">60 minutes</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="nav-btn next-btn" style="width: 100%; margin-top: 20px;">
+                        Start Quiz
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upgrade Modal (for locked quizzes) -->
+    <div id="upgradeModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Upgrade to Premium</h3>
+                <button class="modal-close" id="closeUpgradeModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="text-align: center; margin-bottom: 20px;">This quiz is locked. Upgrade to Premium to access all quizzes!</p>
+                <button id="upgradeNowBtn" class="nav-btn next-btn" style="width: 100%;">
+                    Upgrade Now - ₦100
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Make Payment</h3>
+                <button class="modal-close" id="closePaymentModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="payment-details">
+                    <p><strong>Amount:</strong> ₦100 (One Semester Access)</p>
+                    <p><strong>Account Number:</strong> 1234567890</p>
+                    <p><strong>Bank:</strong> Opay / Palmpay</p>
+                    <p><strong>Instructions:</strong> Copy the unique code below and paste it in the remark/reason field when sending payment.</p>
+                    
+                    <div class="unique-code-container">
+                        <input type="text" id="uniqueCodeInput" class="form-input" readonly>
+                        <button id="copyCodeBtn" class="copy-btn">Copy</button>
+                    </div>
+                    
+                    <button id="paymentSentBtn" class="nav-btn next-btn" style="width: 100%; margin-top: 20px;">
+                        I've Made Payment
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Explanation Modal -->
+    <div id="explanationModal" class="modal-overlay explanation-modal">
+        <div class="modal explanation-modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="explanationTitle">
+                    <i class="fas fa-check-circle"></i> Correct!
+                </h3>
+                <button class="modal-close" id="closeExplanationModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="explanation-result">
+                    <div class="result-icon" id="resultIcon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="result-text" id="resultText">Your answer is correct!</div>
+                </div>
+                <div class="explanation-content">
+                    <h4>Explanation:</h4>
+                    <p id="explanationText">No explanation available.</p>
+                </div>
+                <div class="explanation-actions">
+                    <button id="continueQuizBtn" class="nav-btn next-btn">
+                        Continue Quiz <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Modal -->
+    <div id="resultsModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Quiz Results</h3>
+                <button class="modal-close" id="closeResultsModal">&times;</button>
+            </div>
+            <div class="modal-body" style="text-align: center;">
+                <div style="font-size: 4rem; color: var(--primary); margin: 20px 0;" id="scorePercentage">85%</div>
+                <p style="font-size: 1.2rem; margin-bottom: 10px;">You scored <span id="correctCount">17</span> out of <span id="totalQuestions">20</span> questions</p>
+                <p style="color: var(--gray); margin-bottom: 30px;">Well done! Keep practicing to improve your score.</p>
+                <div style="display: flex; gap: 15px; margin-top: 20px;">
+                    <button id="backToQuizzesBtn" class="nav-btn prev-btn" style="flex: 1;">Back to Quizzes</button>
+                    <button id="goHomeBtn" class="nav-btn next-btn" style="flex: 1;">Go Home</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Messages -->
+    <div id="correctToast" class="toast toast-success hidden">
+        <i class="fas fa-check-circle toast-icon"></i> <span class="toast-text">Correct! Well done.</span>
+    </div>
+    <div id="incorrectToast" class="toast toast-error hidden">
+        <i class="fas fa-times-circle toast-icon"></i> <span class="toast-text">Incorrect. Try again!</span>
+    </div>
+    <div id="unansweredToast" class="toast toast-warning hidden">
+        <i class="fas fa-exclamation-circle toast-icon"></i> <span class="toast-text">You have unanswered questions!</span>
+    </div>
+
+    <!-- JavaScript -->
+    <script type="module" src="mainz.js"></script>
+</body>
+</html>
