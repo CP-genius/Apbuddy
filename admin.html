@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Plus Buddy - Admin Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            min-height: 100vh;
+        }
+        
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .login-card h1 {
+            text-align: center;
+            color: #4f46e5;
+            margin-bottom: 10px;
+        }
+        
+        .login-card p {
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #4f46e5;
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .login-btn:hover {
+            background: #4338ca;
+            transform: translateY(-2px);
+        }
+        
+        .error-message {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .admin-panel {
+            display: none;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .admin-header {
+            background: white;
+            border-radius: 12px;
+            padding: 20px 30px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .admin-header h2 {
+            color: #4f46e5;
+        }
+        
+        .admin-header h2 i {
+            margin-right: 10px;
+        }
+        
+        .logout-admin-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .logout-admin-btn:hover {
+            background: #dc2626;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card h3 {
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #4f46e5;
+        }
+        
+        .action-buttons {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .reset-premium-btn {
+            background: #f59e0b;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .reset-premium-btn:hover {
+            background: #d97706;
+        }
+        
+        .refresh-btn {
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .refresh-btn:hover {
+            background: #4b5563;
+        }
+        
+        .admin-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .admin-tab {
+            padding: 12px 24px;
+            background: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .admin-tab.active {
+            background: #4f46e5;
+            color: white;
+        }
+        
+        .admin-tab-content {
+            display: none;
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .admin-tab-content.active {
+            display: block;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            resize: vertical;
+        }
+        
+        .upload-btn, .verify-btn {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+        
+        .upload-btn:hover, .verify-btn:hover {
+            background: #4338ca;
+        }
+        
+        .edit-btn {
+            background: #f59e0b;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+        
+        .edit-btn:hover {
+            background: #d97706;
+        }
+        
+        .delete-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+        
+        .delete-btn:hover {
+            background: #dc2626;
+        }
+        
+        .quiz-preview {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            max-height: 300px;
+            overflow: auto;
+            display: none;
+        }
+        
+        .quiz-preview.show {
+            display: block;
+        }
+        
+        .preview-question {
+            margin-top: 10px;
+            padding: 8px;
+            background: white;
+            border-radius: 6px;
+            border-left: 3px solid #4f46e5;
+        }
+        
+        .users-table, .payments-table, .subjects-table {
+            width: 100%;
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        th {
+            background: #f9fafb;
+            font-weight: 600;
+        }
+        
+        .premium-badge {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .free-badge {
+            background: #fef3c7;
+            color: #d97706;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .upgrade-user-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        
+        .upgrade-user-btn:hover {
+            background: #059669;
+        }
+        
+        .delete-user-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-left: 5px;
+        }
+        
+        .delete-user-btn:hover {
+            background: #dc2626;
+        }
+        
+        .pending-payment {
+            background: #fef3c7;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .pending-code {
+            font-family: monospace;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #4f46e5;
+            background: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+        
+        .confirm-payment-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .confirm-payment-btn:hover {
+            background: #059669;
+        }
+        
+        .reject-payment-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+        
+        .reject-payment-btn:hover {
+            background: #dc2626;
+        }
+        
+        .success-message {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        
+        .error-message-small {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+        
+        .confirm-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .confirm-modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 400px;
+            text-align: center;
+        }
+        
+        .confirm-modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .confirm-yes {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        
+        .confirm-no {
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        
+        .info-text {
+            background: #f3f4f6;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            color: #374151;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .pending-payment {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            th, td {
+                font-size: 0.8rem;
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="loginPage" class="login-container">
+        <div class="login-card">
+            <h1><i class="fas fa-user-shield"></i> Admin Login</h1>
+            <p>Enter your admin credentials</p>
+            <div id="loginError" class="error-message" style="display: none;"></div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="adminEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="adminPassword" required>
+                </div>
+                <button type="submit" class="login-btn">Login</button>
+            </form>
+        </div>
+    </div>
+    
+    <div id="adminPanel" class="admin-panel">
+        <div class="admin-header">
+            <h2><i class="fas fa-user-shield"></i> A Plus Buddy Admin</h2>
+            <button id="logoutAdminBtn" class="logout-admin-btn">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Users</h3>
+                <div class="stat-number" id="totalUsers">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Premium Users</h3>
+                <div class="stat-number" id="premiumUsers">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Free Users</h3>
+                <div class="stat-number" id="freeUsers">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Pending Payments</h3>
+                <div class="stat-number" id="pendingCount">0</div>
+            </div>
+        </div>
+        
+        <div class="action-buttons">
+            <button id="resetPremiumBtn" class="reset-premium-btn">
+                <i class="fas fa-redo-alt"></i> Reset All to FREE (New Semester)
+            </button>
+            <button id="refreshDataBtn" class="refresh-btn">
+                <i class="fas fa-sync-alt"></i> Refresh Data
+            </button>
+        </div>
+        
+        <div class="admin-tabs">
+            <button class="admin-tab active" data-tab="upload">📤 Random Quiz</button>
+            <button class="admin-tab" data-tab="uploadTopic">📁 Topic Quiz</button>
+            <button class="admin-tab" data-tab="manage">✏️ Manage Quizzes</button>
+            <button class="admin-tab" data-tab="subjects">📚 Manage Subjects</button>
+            <button class="admin-tab" data-tab="verify">✅ Pending Payments</button>
+            <button class="admin-tab" data-tab="users">👥 Manage Users</button>
+        </div>
+        
+        <!-- Random Quiz Upload Tab -->
+        <div id="uploadTab" class="admin-tab-content active">
+            <h3>Upload Random Quiz</h3>
+            <div class="info-text">
+                <i class="fas fa-info-circle"></i> Random quizzes appear directly under subjects without topic organization.
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Subject Name</label>
+                    <select id="uploadSubject" class="form-input">
+                        <option value="">Select Subject</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Quiz Name (quiz1, quiz2, etc.)</label>
+                    <input type="text" id="quizName" class="form-input" placeholder="quiz1">
+                    <small>quiz1 = FREE, quiz2+ = PREMIUM</small>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Upload JSON File</label>
+                <input type="file" id="quizFile" accept=".json" class="form-input">
+            </div>
+            <div class="form-group">
+                <label>Or Paste JSON Here</label>
+                <textarea id="quizJson" rows="8" class="form-textarea" placeholder='{"questions": [{"text": "What is 2+2?", "options": ["3","4","5","6"], "answer": 1, "explanation": "2+2=4"}]}'></textarea>
+            </div>
+            <button id="uploadQuizBtn" class="upload-btn">
+                <i class="fas fa-cloud-upload-alt"></i> Upload Random Quiz
+            </button>
+            <div id="uploadStatus"></div>
+        </div>
+        
+        <!-- Topic Quiz Upload Tab -->
+        <div id="uploadTopicTab" class="admin-tab-content">
+            <h3>Upload Topic-Based Quiz</h3>
+            <div class="info-text">
+                <i class="fas fa-info-circle"></i> Topic quizzes appear under subjects organized by topic (e.g., Algebra, Geometry).
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Subject Name</label>
+                    <select id="topicSubject" class="form-input">
+                        <option value="">Select Subject</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Topic Name</label>
+                    <input type="text" id="topicName" class="form-input" placeholder="e.g., Algebra, Geometry, Set Theory">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Quiz Name (quiz1, quiz2, etc.)</label>
+                    <input type="text" id="topicQuizName" class="form-input" placeholder="quiz1">
+                    <small>quiz1 = FREE, quiz2+ = PREMIUM</small>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Upload JSON File</label>
+                <input type="file" id="topicQuizFile" accept=".json" class="form-input">
+            </div>
+            <div class="form-group">
+                <label>Or Paste JSON Here</label>
+                <textarea id="topicQuizJson" rows="8" class="form-textarea" placeholder='{"questions": [{"text": "What is a set?", "options": ["A collection of objects", "A number", "A shape", "An equation"], "answer": 0, "explanation": "A set is a collection of distinct objects."}]}'></textarea>
+            </div>
+            <button id="uploadTopicQuizBtn" class="upload-btn">
+                <i class="fas fa-folder-open"></i> Upload Topic Quiz
+            </button>
+            <div id="topicUploadStatus"></div>
+        </div>
+        
+        <!-- Manage Quizzes Tab -->
+        <div id="manageTab" class="admin-tab-content">
+            <h3>Manage Quizzes</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Select Subject</label>
+                    <select id="manageSubject" class="form-input">
+                        <option value="">Select Subject</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Quiz Type</label>
+                    <select id="manageQuizType" class="form-input">
+                        <option value="random">Random Quizzes</option>
+                        <option value="topic">Topic-Based Quizzes</option>
+                    </select>
+                </div>
+            </div>
+            <div id="topicSelector" style="display: none;">
+                <div class="form-group">
+                    <label>Select Topic</label>
+                    <select id="manageTopic" class="form-input">
+                        <option value="">Select Topic</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Select Quiz</label>
+                <select id="manageQuiz" class="form-input">
+                    <option value="">Select Quiz</option>
+                </select>
+            </div>
+            <div id="quizPreview" class="quiz-preview">
+                <strong>📖 Quiz Preview:</strong>
+                <div id="quizPreviewContent"></div>
+            </div>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button id="editQuizBtn" class="edit-btn" disabled>
+                    <i class="fas fa-edit"></i> Edit Quiz
+                </button>
+                <button id="deleteQuizBtn" class="delete-btn" disabled>
+                    <i class="fas fa-trash"></i> Delete Quiz
+                </button>
+                <button id="refreshQuizzesBtn" class="refresh-btn">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </div>
+            <div id="manageStatus"></div>
+        </div>
+        
+        <!-- Manage Subjects Tab -->
+        <div id="subjectsTab" class="admin-tab-content">
+            <h3>Manage Subjects</h3>
+            <div style="background: #f9fafb; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                <h4 style="margin-bottom: 15px;">➕ Add New Subject</h4>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Subject Name</label>
+                        <input type="text" id="newSubjectName" class="form-input" placeholder="e.g., Computer Science">
+                    </div>
+                    <div class="form-group">
+                        <label>Icon (Font Awesome)</label>
+                        <input type="text" id="newSubjectIcon" class="form-input" placeholder="fas fa-laptop-code">
+                    </div>
+                </div>
+                <button id="addSubjectBtn" class="upload-btn">
+                    <i class="fas fa-plus"></i> Add Subject
+                </button>
+                <div id="addSubjectStatus"></div>
+            </div>
+            <h4 style="margin-bottom: 15px;">📋 Existing Subjects</h4>
+            <div id="subjectsList" class="subjects-table">
+                <div class="loading">Loading subjects...</div>
+            </div>
+        </div>
+        
+        <!-- Pending Payments Tab -->
+        <div id="verifyTab" class="admin-tab-content">
+            <h3>Pending Payment Requests</h3>
+            <div id="pendingPaymentsList" class="payments-table">
+                <div class="loading">Loading pending payments...</div>
+            </div>
+        </div>
+        
+        <!-- Manage Users Tab -->
+        <div id="usersTab" class="admin-tab-content">
+            <h3>All Users</h3>
+            <div class="form-group">
+                <input type="text" id="searchUser" class="form-input" placeholder="Search by email or name...">
+            </div>
+            <div id="usersList" class="users-table">
+                <div class="loading">Loading users...</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getFirestore, collection, doc, getDoc, getDocs, setDoc, updateDoc, query, where, deleteDoc, addDoc, orderBy } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyDutyjFDj_GfaBxbn4tMwhDg3iCTQ2Z818",
+            authDomain: "aplusbuddy-a6620.firebaseapp.com",
+            projectId: "aplusbuddy-a6620",
+            storageBucket: "aplusbuddy-a6620.firebasestorage.app",
+            messagingSenderId: "593164256153",
+            appId: "1:593164256153:web:2e1d1934c3565a74074908"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        // DOM Elements
+        const loginPage = document.getElementById('loginPage');
+        const adminPanel = document.getElementById('adminPanel');
+        const loginForm = document.getElementById('loginForm');
+        const loginError = document.getElementById('loginError');
+        const logoutAdminBtn = document.getElementById('logoutAdminBtn');
+        const resetPremiumBtn = document.getElementById('resetPremiumBtn');
+        const refreshDataBtn = document.getElementById('refreshDataBtn');
+        
+        const tabs = document.querySelectorAll('.admin-tab');
+        const tabContents = document.querySelectorAll('.admin-tab-content');
+        
+        // Random Quiz Elements
+        const uploadSubject = document.getElementById('uploadSubject');
+        const quizName = document.getElementById('quizName');
+        const quizFile = document.getElementById('quizFile');
+        const quizJson = document.getElementById('quizJson');
+        const uploadQuizBtn = document.getElementById('uploadQuizBtn');
+        const uploadStatus = document.getElementById('uploadStatus');
+        
+        // Topic Quiz Elements
+        const topicSubject = document.getElementById('topicSubject');
+        const topicName = document.getElementById('topicName');
+        const topicQuizName = document.getElementById('topicQuizName');
+        const topicQuizFile = document.getElementById('topicQuizFile');
+        const topicQuizJson = document.getElementById('topicQuizJson');
+        const uploadTopicQuizBtn = document.getElementById('uploadTopicQuizBtn');
+        const topicUploadStatus = document.getElementById('topicUploadStatus');
+        
+        // Manage Elements
+        const manageSubject = document.getElementById('manageSubject');
+        const manageQuizType = document.getElementById('manageQuizType');
+        const manageTopic = document.getElementById('manageTopic');
+        const manageQuiz = document.getElementById('manageQuiz');
+        const editQuizBtn = document.getElementById('editQuizBtn');
+        const deleteQuizBtn = document.getElementById('deleteQuizBtn');
+        const refreshQuizzesBtn = document.getElementById('refreshQuizzesBtn');
+        const quizPreview = document.getElementById('quizPreview');
+        const quizPreviewContent = document.getElementById('quizPreviewContent');
+        const manageStatus = document.getElementById('manageStatus');
+        const topicSelector = document.getElementById('topicSelector');
+        
+        // Subjects Elements
+        const newSubjectName = document.getElementById('newSubjectName');
+        const newSubjectIcon = document.getElementById('newSubjectIcon');
+        const addSubjectBtn = document.getElementById('addSubjectBtn');
+        const addSubjectStatus = document.getElementById('addSubjectStatus');
+        const subjectsListDiv = document.getElementById('subjectsList');
+        
+        // Verify Elements
+        const pendingPaymentsList = document.getElementById('pendingPaymentsList');
+        
+        // Users Elements
+        const searchUser = document.getElementById('searchUser');
+        const usersList = document.getElementById('usersList');
+        
+        const totalUsersSpan = document.getElementById('totalUsers');
+        const premiumUsersSpan = document.getElementById('premiumUsers');
+        const freeUsersSpan = document.getElementById('freeUsers');
+        const pendingCountSpan = document.getElementById('pendingCount');
+        
+        let allUsers = [];
+        let allPayments = [];
+        
+        // Auth
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                const adminEmails = ['admin@aplusbuddy.com'];
+                if (adminEmails.includes(user.email)) {
+                    loginPage.style.display = 'none';
+                    adminPanel.style.display = 'block';
+                    loadAllData();
+                    loadSubjects();
+                    loadSubjectsIntoDropdowns();
+                } else {
+                    signOut(auth);
+                    showLoginError('Unauthorized access. Admin only.');
+                }
+            } else {
+                loginPage.style.display = 'flex';
+                adminPanel.style.display = 'none';
+            }
+        });
+        
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('adminEmail').value;
+            const password = document.getElementById('adminPassword').value;
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+            } catch (error) {
+                showLoginError('Invalid email or password');
+            }
+        });
+        
+        logoutAdminBtn.addEventListener('click', async () => {
+            await signOut(auth);
+        });
+        
+        refreshDataBtn.addEventListener('click', () => {
+            loadAllData();
+            loadSubjects();
+            loadSubjectsIntoDropdowns();
+            showMessage('Data refreshed!', 'success');
+        });
+        
+        resetPremiumBtn.addEventListener('click', () => {
+            showConfirmModal(
+                "Reset All Premium Users",
+                "⚠️ WARNING: This will downgrade ALL premium users to FREE. This action cannot be undone.",
+                async () => {
+                    try {
+                        const usersSnapshot = await getDocs(collection(db, 'users'));
+                        const batch = [];
+                        usersSnapshot.docs.forEach(userDoc => {
+                            if (userDoc.data().isPremium === true) {
+                                batch.push(updateDoc(doc(db, 'users', userDoc.id), {
+                                    isPremium: false,
+                                    resetAt: new Date().toISOString()
+                                }));
+                            }
+                        });
+                        await Promise.all(batch);
+                        showMessage(`Reset ${batch.length} users to FREE!`, 'success');
+                        loadAllData();
+                    } catch (error) {
+                        showMessage('Error resetting users', 'error');
+                    }
+                }
+            );
+        });
+        
+        function showConfirmModal(title, message, onConfirm) {
+            const modal = document.createElement('div');
+            modal.className = 'confirm-modal';
+            modal.innerHTML = `
+                <div class="confirm-modal-content">
+                    <h3>${title}</h3>
+                    <p>${message}</p>
+                    <div class="confirm-modal-buttons">
+                        <button class="confirm-yes">Yes, Reset All</button>
+                        <button class="confirm-no">Cancel</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            modal.querySelector('.confirm-yes').onclick = () => { onConfirm(); modal.remove(); };
+            modal.querySelector('.confirm-no').onclick = () => modal.remove();
+        }
+        
+        function showLoginError(message) {
+            loginError.textContent = message;
+            loginError.style.display = 'block';
+            setTimeout(() => loginError.style.display = 'none', 3000);
+        }
+        
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.dataset.tab;
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                tabContents.forEach(content => content.classList.remove('active'));
+                document.getElementById(`${tabId}Tab`).classList.add('active');
+                if (tabId === 'users') displayUsers(allUsers);
+                if (tabId === 'verify') displayPendingPayments(allPayments);
+                if (tabId === 'subjects') loadSubjects();
+            });
+        });
+        
+        // Subjects Management
+        async function loadSubjects() {
+            try {
+                const snapshot = await getDocs(collection(db, 'subjects'));
+                const subjects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                if (subjects.length === 0) {
+                    subjectsListDiv.innerHTML = '<div class="loading">No subjects added yet.</div>';
+                    return;
+                }
+                subjectsListDiv.innerHTML = `
+                    <table>
+                        <thead><tr><th>Subject Name</th><th>Icon</th><th>Quizzes</th><th>Created</th><th>Actions</th></tr></thead>
+                        <tbody>
+                            ${subjects.map(subject => `
+                                <tr>
+                                    <td><strong>${subject.id}</strong></td>
+                                    <td><i class="${subject.icon || 'fas fa-book'}"></i> ${subject.icon || 'fas fa-book'}</td>
+                                    <td>${subject.quizCount || 0} quizzes</td>
+                                    <td>${subject.createdAt ? new Date(subject.createdAt).toLocaleDateString() : 'N/A'}</td>
+                                    <td>
+                                        <button class="edit-subject-btn" onclick="window.editSubject('${subject.id}', '${subject.icon || 'fas fa-book'}')" style="background:#f59e0b;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;margin-right:5px;">Edit</button>
+                                        <button class="delete-subject-btn" onclick="window.deleteSubject('${subject.id}')" style="background:#ef4444;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;">Delete</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (error) {
+                subjectsListDiv.innerHTML = '<div class="error-message-small">Error loading subjects</div>';
+            }
+        }
+        
+        addSubjectBtn.addEventListener('click', async () => {
+            const subjectName = newSubjectName.value.trim();
+            const subjectIcon = newSubjectIcon.value.trim() || 'fas fa-book';
+            if (!subjectName) {
+                addSubjectStatus.innerHTML = '<div class="error-message-small">Please enter a subject name</div>';
+                return;
+            }
+            addSubjectStatus.innerHTML = '<div class="loading">Adding subject...</div>';
+            try {
+                const subjectRef = doc(db, 'subjects', subjectName);
+                const subjectDoc = await getDoc(subjectRef);
+                if (subjectDoc.exists()) {
+                    addSubjectStatus.innerHTML = '<div class="error-message-small">Subject already exists!</div>';
+                    return;
+                }
+                await setDoc(subjectRef, {
+                    name: subjectName,
+                    icon: subjectIcon,
+                    createdAt: new Date().toISOString(),
+                    quizCount: 0
+                });
+                addSubjectStatus.innerHTML = '<div class="success-message">✓ Subject added successfully!</div>';
+                newSubjectName.value = '';
+                newSubjectIcon.value = '';
+                await loadSubjects();
+                await loadSubjectsIntoDropdowns();
+                setTimeout(() => addSubjectStatus.innerHTML = '', 3000);
+            } catch (error) {
+                addSubjectStatus.innerHTML = '<div class="error-message-small">Error adding subject: ' + error.message + '</div>';
+            }
+        });
+        
+        window.deleteSubject = async (subjectName) => {
+            showConfirmModal("Delete Subject", `⚠️ WARNING: Deleting "${subjectName}" will delete ALL quizzes.`, async () => {
+                try {
+                    const quizzesRef = collection(db, 'subjects', subjectName, 'quizzes');
+                    const quizzesSnapshot = await getDocs(quizzesRef);
+                    for (const quizDoc of quizzesSnapshot.docs) {
+                        await deleteDoc(doc(db, 'subjects', subjectName, 'quizzes', quizDoc.id));
+                    }
+                    await deleteDoc(doc(db, 'subjects', subjectName));
+                    showMessage(`✓ Subject "${subjectName}" deleted!`, 'success');
+                    await loadSubjects();
+                    await loadSubjectsIntoDropdowns();
+                    loadAllData();
+                } catch (error) {
+                    showMessage('Error deleting subject', 'error');
+                }
+            });
+        };
+        
+        window.editSubject = async (subjectName, currentIcon) => {
+            const newName = prompt('Enter new subject name:', subjectName);
+            if (!newName || newName === subjectName) return;
+            const newIcon = prompt('Enter new icon class:', currentIcon);
+            try {
+                await setDoc(doc(db, 'subjects', newName), { name: newName, icon: newIcon || currentIcon, updatedAt: new Date().toISOString() });
+                const oldQuizzesRef = collection(db, 'subjects', subjectName, 'quizzes');
+                const quizzesSnapshot = await getDocs(oldQuizzesRef);
+                for (const quizDoc of quizzesSnapshot.docs) {
+                    await setDoc(doc(db, 'subjects', newName, 'quizzes', quizDoc.id), quizDoc.data());
+                }
+                await deleteDoc(doc(db, 'subjects', subjectName));
+                showMessage(`✓ Subject renamed to "${newName}"`, 'success');
+                await loadSubjects();
+                await loadSubjectsIntoDropdowns();
+            } catch (error) {
+                showMessage('Error editing subject', 'error');
+            }
+        };
+        
+        async function loadSubjectsIntoDropdowns() {
+            try {
+                const snapshot = await getDocs(collection(db, 'subjects'));
+                const subjects = snapshot.docs.map(doc => doc.id);
+                [uploadSubject, topicSubject, manageSubject].forEach(select => {
+                    if (select) {
+                        const current = select.value;
+                        select.innerHTML = '<option value="">Select Subject</option>';
+                        subjects.forEach(s => select.innerHTML += `<option value="${s}">${s}</option>`);
+                        if (current && subjects.includes(current)) select.value = current;
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading subjects:', error);
+            }
+        }
+        
+        // Random Quiz Upload
+        uploadQuizBtn.addEventListener('click', async () => {
+            const subject = uploadSubject.value;
+            const quiz = quizName.value.trim();
+            let questions = null;
+            if (!subject || !quiz) {
+                uploadStatus.innerHTML = '<div class="error-message-small">Please select subject and enter quiz name</div>';
+                return;
+            }
+            if (quizFile.files.length > 0) {
+                const text = await quizFile.files[0].text();
+                try { questions = JSON.parse(text).questions || JSON.parse(text); }
+                catch { uploadStatus.innerHTML = '<div class="error-message-small">Invalid JSON file</div>'; return; }
+            } else if (quizJson.value.trim()) {
+                try { questions = JSON.parse(quizJson.value).questions || JSON.parse(quizJson.value); }
+                catch { uploadStatus.innerHTML = '<div class="error-message-small">Invalid JSON format</div>'; return; }
+            } else {
+                uploadStatus.innerHTML = '<div class="error-message-small">Please provide JSON</div>';
+                return;
+            }
+            if (!questions || !Array.isArray(questions)) {
+                uploadStatus.innerHTML = '<div class="error-message-small">JSON must contain a "questions" array</div>';
+                return;
+            }
+            uploadStatus.innerHTML = '<div class="loading">Uploading...</div>';
+            try {
+                await setDoc(doc(db, 'subjects', subject, 'quizzes', quiz), { type: 'random', questions, createdAt: new Date().toISOString() });
+                uploadStatus.innerHTML = '<div class="success-message">✓ Random Quiz uploaded!</div>';
+                quizFile.value = ''; quizJson.value = ''; quizName.value = '';
+                setTimeout(() => uploadStatus.innerHTML = '', 3000);
+            } catch (error) {
+                uploadStatus.innerHTML = '<div class="error-message-small">Error: ' + error.message + '</div>';
+            }
+        });
+        
+        // Topic Quiz Upload
+        uploadTopicQuizBtn.addEventListener('click', async () => {
+            const subject = topicSubject.value;
+            const topic = topicName.value.trim();
+            const quiz = topicQuizName.value.trim();
+            let questions = null;
+            if (!subject || !topic || !quiz) {
+                topicUploadStatus.innerHTML = '<div class="error-message-small">Please fill all fields</div>';
+                return;
+            }
+            if (topicQuizFile.files.length > 0) {
+                const text = await topicQuizFile.files[0].text();
+                try { questions = JSON.parse(text).questions || JSON.parse(text); }
+                catch { topicUploadStatus.innerHTML = '<div class="error-message-small">Invalid JSON file</div>'; return; }
+            } else if (topicQuizJson.value.trim()) {
+                try { questions = JSON.parse(topicQuizJson.value).questions || JSON.parse(topicQuizJson.value); }
+                catch { topicUploadStatus.innerHTML = '<div class="error-message-small">Invalid JSON format</div>'; return; }
+            } else {
+                topicUploadStatus.innerHTML = '<div class="error-message-small">Please provide JSON</div>';
+                return;
+            }
+            if (!questions || !Array.isArray(questions)) {
+                topicUploadStatus.innerHTML = '<div class="error-message-small">JSON must contain a "questions" array</div>';
+                return;
+            }
+            topicUploadStatus.innerHTML = '<div class="loading">Uploading...</div>';
+            try {
+                const quizDocId = `topic_${topic}_${quiz}`;
+                await setDoc(doc(db, 'subjects', subject, 'quizzes', quizDocId), { 
+                    type: 'topic', topic: topic, quizName: quiz, questions, createdAt: new Date().toISOString()
+                });
+                topicUploadStatus.innerHTML = '<div class="success-message">✓ Topic Quiz uploaded!</div>';
+                topicQuizFile.value = ''; topicQuizJson.value = ''; topicName.value = ''; topicQuizName.value = '';
+                setTimeout(() => topicUploadStatus.innerHTML = '', 3000);
+            } catch (error) {
+                topicUploadStatus.innerHTML = '<div class="error-message-small">Error: ' + error.message + '</div>';
+            }
+        });
+        
+        // Manage Quizzes
+        manageQuizType.addEventListener('change', () => {
+            topicSelector.style.display = manageQuizType.value === 'topic' ? 'block' : 'none';
+            loadQuizzesForManage();
+        });
+        
+        manageSubject.addEventListener('change', loadQuizzesForManage);
+        manageTopic.addEventListener('change', loadQuizzesForManage);
+        
+        async function loadQuizzesForManage() {
+            const subject = manageSubject.value;
+            const isTopic = manageQuizType.value === 'topic';
+            if (!subject) {
+                manageQuiz.innerHTML = '<option value="">Select Quiz</option>';
+                return;
+            }
+            try {
+                const snapshot = await getDocs(collection(db, 'subjects', subject, 'quizzes'));
+                let quizzes = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (isTopic && data.type === 'topic') quizzes.push({ id: doc.id, ...data });
+                    if (!isTopic && data.type !== 'topic') quizzes.push({ id: doc.id, ...data });
+                });
+                if (isTopic) {
+                    const topics = [...new Set(quizzes.map(q => q.topic).filter(t => t))];
+                    manageTopic.innerHTML = '<option value="">Select Topic</option>';
+                    topics.forEach(t => manageTopic.innerHTML += `<option value="${t}">${t}</option>`);
+                    const selectedTopic = manageTopic.value;
+                    if (selectedTopic) quizzes = quizzes.filter(q => q.topic === selectedTopic);
+                }
+                manageQuiz.innerHTML = '<option value="">Select Quiz</option>';
+                quizzes.forEach(quiz => {
+                    const display = isTopic ? `${quiz.topic} - ${quiz.quizName || quiz.id}` : quiz.id;
+                    manageQuiz.innerHTML += `<option value="${quiz.id}">${display.toUpperCase()}</option>`;
+                });
+                editQuizBtn.disabled = true; deleteQuizBtn.disabled = true;
+                quizPreview.classList.remove('show');
+            } catch (error) {
+                console.error('Error loading quizzes:', error);
+            }
+        }
+        
+        manageQuiz.addEventListener('change', async () => {
+            const subject = manageSubject.value;
+            const quizId = manageQuiz.value;
+            if (!subject || !quizId) {
+                editQuizBtn.disabled = true; deleteQuizBtn.disabled = true;
+                quizPreview.classList.remove('show');
+                return;
+            }
+            try {
+                const quizDoc = await getDoc(doc(db, 'subjects', subject, 'quizzes', quizId));
+                if (quizDoc.exists()) {
+                    const data = quizDoc.data();
+                    const questions = data.questions || [];
+                    quizPreviewContent.innerHTML = `
+                        <strong>📚 ${quizId.toUpperCase()}</strong><br>
+                        <strong>Type:</strong> ${data.type === 'topic' ? `Topic: ${data.topic}` : 'Random'}<br>
+                        <strong>Questions:</strong> ${questions.length}<br><br>
+                        ${questions.slice(0, 5).map((q, i) => `
+                            <div class="preview-question">
+                                <strong>Q${i+1}:</strong> ${q.text.substring(0, 100)}<br>
+                                <small>Options: ${q.options.join(', ')}</small>
+                            </div>
+                        `).join('')}
+                        ${questions.length > 5 ? '<em>...and more</em>' : ''}
+                    `;
+                    quizPreview.classList.add('show');
+                    editQuizBtn.disabled = false;
+                    deleteQuizBtn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Error loading quiz:', error);
+            }
+        });
+        
+        deleteQuizBtn.addEventListener('click', () => {
+            const subject = manageSubject.value;
+            const quizId = manageQuiz.value;
+            if (!subject || !quizId) return;
+            showConfirmModal("Delete Quiz", "Delete this quiz permanently?", async () => {
+                try {
+                    await deleteDoc(doc(db, 'subjects', subject, 'quizzes', quizId));
+                    manageStatus.innerHTML = '<div class="success-message">✓ Quiz deleted!</div>';
+                    await loadQuizzesForManage();
+                    manageQuiz.value = '';
+                    quizPreview.classList.remove('show');
+                    editQuizBtn.disabled = true; deleteQuizBtn.disabled = true;
+                    setTimeout(() => manageStatus.innerHTML = '', 3000);
+                } catch (error) {
+                    manageStatus.innerHTML = '<div class="error-message-small">Error deleting quiz</div>';
+                }
+            });
+        });
+        
+        editQuizBtn.addEventListener('click', async () => {
+            const subject = manageSubject.value;
+            const quizId = manageQuiz.value;
+            if (!subject || !quizId) return;
+            try {
+                const quizDoc = await getDoc(doc(db, 'subjects', subject, 'quizzes', quizId));
+                if (quizDoc.exists()) {
+                    const data = quizDoc.data();
+                    const questions = data.questions || [];
+                    if (data.type === 'topic') {
+                        topicSubject.value = subject;
+                        topicName.value = data.topic;
+                        topicQuizName.value = data.quizName || quizId.split('_').pop();
+                        topicQuizJson.value = JSON.stringify({ questions }, null, 2);
+                        document.querySelector('[data-tab="uploadTopic"]').click();
+                    } else {
+                        uploadSubject.value = subject;
+                        quizName.value = quizId;
+                        quizJson.value = JSON.stringify({ questions }, null, 2);
+                        document.querySelector('[data-tab="upload"]').click();
+                    }
+                    manageStatus.innerHTML = '<div class="success-message">✓ Quiz loaded for editing</div>';
+                    setTimeout(() => manageStatus.innerHTML = '', 3000);
+                }
+            } catch (error) {
+                manageStatus.innerHTML = '<div class="error-message-small">Error loading quiz</div>';
+            }
+        });
+        
+        refreshQuizzesBtn.addEventListener('click', async () => {
+            if (manageSubject.value) {
+                await loadQuizzesForManage();
+                manageStatus.innerHTML = '<div class="success-message">✓ Quizzes refreshed</div>';
+                setTimeout(() => manageStatus.innerHTML = '', 2000);
+            }
+        });
+        
+        // Data Loading
+        async function loadAllData() {
+            await loadDashboardData();
+            await loadUsers();
+            await loadPendingPayments();
+        }
+        
+        async function loadDashboardData() {
+            try {
+                const usersSnapshot = await getDocs(collection(db, 'users'));
+                const users = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                allUsers = users;
+                totalUsersSpan.textContent = users.length;
+                premiumUsersSpan.textContent = users.filter(u => u.isPremium === true).length;
+                freeUsersSpan.textContent = users.filter(u => !u.isPremium).length;
+            } catch (error) { console.error('Error loading stats:', error); }
+        }
+        
+        async function loadUsers() {
+            try {
+                const usersSnapshot = await getDocs(collection(db, 'users'));
+                allUsers = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                displayUsers(allUsers);
+            } catch (error) {
+                usersList.innerHTML = '<div class="error-message-small">Error loading users</div>';
+            }
+        }
+        
+        function displayUsers(users) {
+            const searchTerm = searchUser?.value.toLowerCase() || '';
+            const filtered = users.filter(u => u.email?.toLowerCase().includes(searchTerm) || u.name?.toLowerCase().includes(searchTerm));
+            if (filtered.length === 0) { usersList.innerHTML = '<div class="loading">No users found</div>'; return; }
+            usersList.innerHTML = `
+                <table><thead><tr><th>Email</th><th>Name</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
+                <tbody>${filtered.map(user => `
+                    <tr>
+                        <td>${user.email || 'N/A'}</td>
+                        <td>${user.name || 'N/A'}</td>
+                        <td><span class="${user.isPremium ? 'premium-badge' : 'free-badge'}">${user.isPremium ? 'PREMIUM' : 'FREE'}</span></td>
+                        <td>${user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</td>
+                        <td>${!user.isPremium ? `<button class="upgrade-user-btn" onclick="window.upgradeUser('${user.id}', '${user.email}')">Upgrade</button>` : ''}
+                            <button class="delete-user-btn" onclick="window.deleteUser('${user.id}')">Delete</button>
+                        </td>
+                    </tr>
+                `).join('')}</tbody></table>
+            `;
+        }
+        
+        window.upgradeUser = async (userId, userEmail) => {
+            if (confirm(`Upgrade ${userEmail} to PREMIUM?`)) {
+                try {
+                    await updateDoc(doc(db, 'users', userId), { isPremium: true, upgradedAt: new Date().toISOString() });
+                    showMessage(`${userEmail} upgraded!`, 'success');
+                    loadAllData();
+                } catch (error) { showMessage('Error upgrading user', 'error'); }
+            }
+        };
+        
+        window.deleteUser = async (userId) => {
+            if (confirm('Delete this user?')) {
+                try {
+                    await deleteDoc(doc(db, 'users', userId));
+                    showMessage('User deleted', 'success');
+                    loadAllData();
+                } catch (error) { showMessage('Error deleting user', 'error'); }
+            }
+        };
+        
+        async function loadPendingPayments() {
+            try {
+                const paymentsSnapshot = await getDocs(query(collection(db, 'payments'), orderBy('timestamp', 'desc')));
+                allPayments = paymentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(p => p.status === 'pending');
+                pendingCountSpan.textContent = allPayments.length;
+                displayPendingPayments(allPayments);
+            } catch (error) {
+                pendingPaymentsList.innerHTML = '<div class="error-message-small">Error loading payments</div>';
+            }
+        }
+        
+        function displayPendingPayments(payments) {
+            if (payments.length === 0) { pendingPaymentsList.innerHTML = '<div class="loading">No pending payments</div>'; return; }
+            pendingPaymentsList.innerHTML = payments.map(p => `
+                <div class="pending-payment">
+                    <div><strong>👤 User:</strong> ${p.userEmail}<br><strong>🔑 Code:</strong> <span class="pending-code">${p.code}</span><br><strong>📅 Date:</strong> ${new Date(p.timestamp).toLocaleString()}</div>
+                    <div>
+                        <button class="confirm-payment-btn" onclick="window.confirmPayment('${p.id}', '${p.userId}', '${p.userEmail}')">✅ Confirm</button>
+                        <button class="reject-payment-btn" onclick="window.rejectPayment('${p.id}')">❌ Reject</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        window.confirmPayment = async (paymentId, userId, userEmail) => {
+            if (confirm(`Confirm payment for ${userEmail}?`)) {
+                try {
+                    if (userId) await updateDoc(doc(db, 'users', userId), { isPremium: true, upgradedAt: new Date().toISOString() });
+                    await updateDoc(doc(db, 'payments', paymentId), { status: 'confirmed', confirmedAt: new Date().toISOString() });
+                    showMessage(`✓ ${userEmail} upgraded!`, 'success');
+                    loadAllData();
+                } catch (error) { showMessage('Error confirming payment', 'error'); }
+            }
+        };
+        
+        window.rejectPayment = async (paymentId) => {
+            if (confirm('Reject this payment?')) {
+                try {
+                    await updateDoc(doc(db, 'payments', paymentId), { status: 'rejected', rejectedAt: new Date().toISOString() });
+                    showMessage('Payment rejected', 'success');
+                    loadPendingPayments();
+                } catch (error) { showMessage('Error rejecting payment', 'error'); }
+            }
+        };
+        
+        if (searchUser) searchUser.addEventListener('input', () => displayUsers(allUsers));
+        
+        function showMessage(message, type) {
+            const div = document.createElement('div');
+            div.className = type === 'success' ? 'success-message' : 'error-message-small';
+            div.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:9999';
+            div.textContent = message;
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 3000);
+        }
+    </script>
+</body>
+</html>
