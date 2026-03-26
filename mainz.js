@@ -7,7 +7,11 @@ import {
     onAuthStateChanged,
     signInWithPopup,
     GoogleAuthProvider,
-    signOut
+    signOut,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    updateProfile,
+    sendPasswordResetEmail
 } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
 
 import {
@@ -60,8 +64,6 @@ let subjects = [];
 const loadingScreen = document.getElementById('loadingScreen');
 const waveProgress = document.getElementById('waveProgress');
 const continueBtn = document.getElementById('continueBtn');
-const authContainer = document.getElementById('authContainer');
-const googleSignInBtn = document.getElementById('googleSignInBtn');
 const mainHeader = document.getElementById('mainHeader');
 const homeNavBtn = document.getElementById('homeNavBtn');
 const logoutBtn = document.getElementById('logoutBtn');
@@ -123,6 +125,29 @@ const correctToast = document.getElementById('correctToast');
 const incorrectToast = document.getElementById('incorrectToast');
 const unansweredToast = document.getElementById('unansweredToast');
 
+// Login Modal Elements
+const loginModal = document.getElementById('loginModal');
+const closeLoginModal = document.getElementById('closeLoginModal');
+const authTabs = document.querySelectorAll('.auth-tab');
+const loginFormContainer = document.getElementById('loginFormContainer');
+const signupFormContainer = document.getElementById('signupFormContainer');
+const loginFormModal = document.getElementById('loginFormModal');
+const signupFormModal = document.getElementById('signupFormModal');
+const modalGoogleSignInBtn = document.getElementById('modalGoogleSignInBtn');
+const modalGoogleSignUpBtn = document.getElementById('modalGoogleSignUpBtn');
+const loginErrorMsg = document.getElementById('loginErrorMsg');
+const signupErrorMsg = document.getElementById('signupErrorMsg');
+const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+
+// Reset Password Modal Elements
+const resetPasswordModal = document.getElementById('resetPasswordModal');
+const closeResetModal = document.getElementById('closeResetModal');
+const resetPasswordForm = document.getElementById('resetPasswordForm');
+const resetEmail = document.getElementById('resetEmail');
+const resetErrorMsg = document.getElementById('resetErrorMsg');
+const resetSuccessMsg = document.getElementById('resetSuccessMsg');
+const backToLoginFromReset = document.getElementById('backToLoginFromReset');
+
 // =============================================
 // AUTHENTICATION
 // =============================================
@@ -137,7 +162,6 @@ async function checkUserAuth() {
             state.user = user;
             await checkUserPremiumStatus(user.uid);
             updateUserBadge();
-            authContainer.style.display = 'none';
             continueBtn.classList.remove('hidden');
             continueBtn.style.display = 'flex';
             logoutBtn.classList.remove('hidden');
@@ -150,7 +174,6 @@ async function checkUserAuth() {
             userTier.textContent = "FREE";
             userTier.className = "badge free";
             logoutBtn.classList.add('hidden');
-            authContainer.style.display = 'flex';
             continueBtn.classList.add('hidden');
             await loadFreeQuizData();
         }
@@ -198,12 +221,185 @@ function updateUserBadge() {
     }
 }
 
-async function signInWithGoogle() {
-    try {
-        await signInWithPopup(auth, provider);
-    } catch (error) {
-        showToast(incorrectToast, "Sign in failed. Please try again.");
-    }
+// Reset Password Functions
+function showResetPasswordModal() {
+    closeModal(loginModal);
+    openModal(resetPasswordModal);
+    if (resetErrorMsg) resetErrorMsg.classList.add('hidden');
+    if (resetSuccessMsg) resetSuccessMsg.classList.add('hidden');
+    if (resetEmail) resetEmail.value = '';
+}
+
+function closeResetPasswordModal() {
+    closeModal(resetPasswordModal);
+    openModal(loginModal);
+}
+
+if (forgotPasswordLink) {
+    forgotPasswordLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        showResetPasswordModal();
+    });
+}
+
+if (resetPasswordForm) {
+    resetPasswordForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = resetEmail.value.trim();
+        
+        if (!email) {
+            resetErrorMsg.textContent = 'Please enter your email address';
+            resetErrorMsg.classList.remove('hidden');
+            return;
+        }
+        
+        resetErrorMsg.classList.add('hidden');
+        resetSuccessMsg.classList.add('hidden');
+        
+        try {
+            await sendPasswordResetEmail(auth, email);
+            resetSuccessMsg.textContent = `Password reset email sent to ${email}. Check your inbox.`;
+            resetSuccessMsg.classList.remove('hidden');
+            resetEmail.value = '';
+            
+            // Auto close after 3 seconds and show success toast
+            setTimeout(() => {
+                closeResetPasswordModal();
+                showToast(correctToast, "Password reset email sent!");
+            }, 3000);
+        } catch (error) {
+            let errorMessage = 'Failed to send reset email. ';
+            if (error.code === 'auth/user-not-found') {
+                errorMessage = 'No account found with this email address.';
+            } else if (error.code === 'auth/invalid-email') {
+                errorMessage = 'Please enter a valid email address.';
+            } else {
+                errorMessage += error.message;
+            }
+            resetErrorMsg.textContent = errorMessage;
+            resetErrorMsg.classList.remove('hidden');
+        }
+    });
+}
+
+if (closeResetModal) {
+    closeResetModal.addEventListener('click', closeResetPasswordModal);
+}
+
+if (backToLoginFromReset) {
+    backToLoginFromReset.addEventListener('click', () => {
+        closeModal(resetPasswordModal);
+        openModal(loginModal);
+    });
+}
+
+// Login Modal Functions
+function showLoginModal() {
+    openModal(loginModal);
+}
+
+function closeLoginModalFn() {
+    closeModal(loginModal);
+    if (loginFormModal) loginFormModal.reset();
+    if (signupFormModal) signupFormModal.reset();
+    if (loginErrorMsg) loginErrorMsg.classList.add('hidden');
+    if (signupErrorMsg) signupErrorMsg.classList.add('hidden');
+}
+
+// Auth Tab Switching
+if (authTabs) {
+    authTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const tabId = tab.dataset.authTab;
+            authTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            if (tabId === 'login') {
+                loginFormContainer.classList.add('active');
+                signupFormContainer.classList.remove('active');
+            } else {
+                signupFormContainer.classList.add('active');
+                loginFormContainer.classList.remove('active');
+            }
+        });
+    });
+}
+
+// Login Form Handler
+if (loginFormModal) {
+    loginFormModal.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+        
+        try {
+            await signInWithEmailAndPassword(auth, email, password);
+            closeLoginModalFn();
+            showToast(correctToast, "Login successful!");
+        } catch (error) {
+            loginErrorMsg.textContent = error.message;
+            loginErrorMsg.classList.remove('hidden');
+        }
+    });
+}
+
+// Signup Form Handler
+if (signupFormModal) {
+    signupFormModal.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('signupName').value;
+        const email = document.getElementById('signupEmail').value;
+        const password = document.getElementById('signupPassword').value;
+        
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            await updateProfile(userCredential.user, { displayName: name });
+            await setDoc(doc(db, "users", userCredential.user.uid), {
+                email: email,
+                name: name,
+                isPremium: false,
+                createdAt: new Date().toISOString()
+            });
+            closeLoginModalFn();
+            showToast(correctToast, "Account created successfully!");
+        } catch (error) {
+            signupErrorMsg.textContent = error.message;
+            signupErrorMsg.classList.remove('hidden');
+        }
+    });
+}
+
+// Modal Google Sign In
+if (modalGoogleSignInBtn) {
+    modalGoogleSignInBtn.addEventListener('click', async () => {
+        try {
+            await signInWithPopup(auth, provider);
+            closeLoginModalFn();
+            showToast(correctToast, "Login successful!");
+        } catch (error) {
+            loginErrorMsg.textContent = error.message;
+            loginErrorMsg.classList.remove('hidden');
+        }
+    });
+}
+
+// Modal Google Sign Up
+if (modalGoogleSignUpBtn) {
+    modalGoogleSignUpBtn.addEventListener('click', async () => {
+        try {
+            await signInWithPopup(auth, provider);
+            closeLoginModalFn();
+            showToast(correctToast, "Account created successfully!");
+        } catch (error) {
+            signupErrorMsg.textContent = error.message;
+            signupErrorMsg.classList.remove('hidden');
+        }
+    });
+}
+
+// Close modal
+if (closeLoginModal) {
+    closeLoginModal.addEventListener('click', closeLoginModalFn);
 }
 
 async function signOutUser() {
@@ -221,7 +417,7 @@ async function signOutUser() {
 }
 
 // =============================================
-// LOAD SUBJECTS - FIXED (No fallback)
+// LOAD SUBJECTS
 // =============================================
 
 async function loadSubjects() {
@@ -237,7 +433,6 @@ async function loadSubjects() {
             subjects = [];
         }
         
-        // Refresh subject list if visible
         if (subjectSelectionPage && !subjectSelectionPage.classList.contains('hidden')) {
             populateSubjectList();
         }
@@ -362,12 +557,29 @@ async function handlePaymentSent() {
 // =============================================
 
 function initApp() {
+    console.log("🚀 A Plus Buddy Initializing...");
+    
+    // Force show continue button after 5 seconds as fallback
+    setTimeout(() => {
+        const continueBtnEl = document.getElementById('continueBtn');
+        if (continueBtnEl && continueBtnEl.classList.contains('hidden')) {
+            console.log("⚠️ Fallback: Showing continue button");
+            continueBtnEl.classList.remove('hidden');
+            continueBtnEl.style.display = 'flex';
+            if (waveProgress) waveProgress.style.display = 'none';
+        }
+    }, 5000);
+    
+    // Start loading animation
     setTimeout(() => {
         if (waveProgress) waveProgress.classList.add('complete');
+        console.log("Loading animation started...");
     }, 500);
     
+    // Listen for transition end
     if (waveProgress) {
         waveProgress.addEventListener('transitionend', function() {
+            console.log("✅ Transition ended - showing continue button");
             waveProgress.style.display = 'none';
             const continueBtnEl = document.getElementById('continueBtn');
             if (continueBtnEl) {
@@ -376,17 +588,36 @@ function initApp() {
             }
             checkUserAuth();
         });
+        
+        // Fallback in case transitionend doesn't fire
+        setTimeout(() => {
+            if (waveProgress.style.display !== 'none') {
+                console.log("⚠️ Transition timeout - forcing continue button");
+                waveProgress.style.display = 'none';
+                const continueBtnEl = document.getElementById('continueBtn');
+                if (continueBtnEl) {
+                    continueBtnEl.classList.remove('hidden');
+                    continueBtnEl.style.display = 'flex';
+                }
+                checkUserAuth();
+            }
+        }, 4000);
     }
     
     setupEventListeners();
+    console.log("✓ Event listeners initialized");
 }
-
 function setupEventListeners() {
-    if (googleSignInBtn) googleSignInBtn.addEventListener('click', signInWithGoogle);
     if (logoutBtn) logoutBtn.addEventListener('click', signOutUser);
     if (continueBtn) continueBtn.addEventListener('click', handleContinue);
     if (homeNavBtn) homeNavBtn.addEventListener('click', goToHomePage);
-    if (takeQuizBtn) takeQuizBtn.addEventListener('click', showSubjectSelectionPage);
+    if (takeQuizBtn) takeQuizBtn.addEventListener('click', () => {
+        if (state.user) {
+            showSubjectSelectionPage();
+        } else {
+            showLoginModal();
+        }
+    });
     if (subjectSearchInput) subjectSearchInput.addEventListener('input', filterSubjects);
     if (backToSubjectBtn) backToSubjectBtn.addEventListener('click', goToSubjectSelectionPage);
     if (quizTypeSelect) quizTypeSelect.addEventListener('change', handleQuizTypeChange);
@@ -414,7 +645,16 @@ function setupEventListeners() {
     
     document.querySelectorAll('.modal-overlay').forEach(modal => {
         modal.addEventListener('click', (e) => {
-            if (e.target === modal) closeModal(modal);
+            if (e.target === modal && modal.id !== 'loginModal' && modal.id !== 'resetPasswordModal') {
+                closeModal(modal);
+            }
+            if (e.target === loginModal) {
+                closeLoginModalFn();
+            }
+            if (e.target === resetPasswordModal) {
+                closeModal(resetPasswordModal);
+                openModal(loginModal);
+            }
         });
     });
 }
