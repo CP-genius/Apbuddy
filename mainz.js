@@ -149,6 +149,39 @@ const resetSuccessMsg = document.getElementById('resetSuccessMsg');
 const backToLoginFromReset = document.getElementById('backToLoginFromReset');
 
 // =============================================
+// ANSWER SHUFFLING UTILITY
+// =============================================
+
+// Fisher-Yates shuffle algorithm
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+// Shuffle options for a single question and update the correct answer index
+function shuffleQuestionOptions(question) {
+    // Create array of original indices
+    const indices = [0, 1, 2, 3];
+    const shuffledIndices = shuffleArray([...indices]);
+    
+    // Create new shuffled options array
+    const shuffledOptions = shuffledIndices.map(i => question.options[i]);
+    
+    // Find where the correct answer moved to
+    const newCorrectIndex = shuffledIndices.indexOf(question.answer);
+    
+    return {
+        text: question.text,
+        options: shuffledOptions,
+        answer: newCorrectIndex,
+        explanation: question.explanation
+    };
+}
+
+// =============================================
 // AUTHENTICATION
 // =============================================
 
@@ -595,7 +628,6 @@ function setupEventListeners() {
     if (continueBtn) continueBtn.addEventListener('click', handleContinue);
     if (homeNavBtn) homeNavBtn.addEventListener('click', goToHomePage);
     
-    // FIX: Check auth directly on click
     if (takeQuizBtn) {
         takeQuizBtn.addEventListener('click', () => {
             const currentUser = auth.currentUser;
@@ -919,10 +951,23 @@ function handleQuizSetup(e) {
     loadQuestionsForQuiz();
 }
 
+// =============================================
+// QUIZ EXECUTION (WITH SHUFFLING)
+// =============================================
+
 function loadQuestionsForQuiz() {
-    if (state.currentQuiz?.data?.questions) {
-        state.questions = state.currentQuiz.data.questions;
+    if (state.currentQuiz && state.currentQuiz.data) {
+        let questions = state.currentQuiz.data.questions || state.currentQuiz.data;
+        
+        // SHUFFLE OPTIONS FOR EACH QUESTION
+        state.questions = questions.map(q => shuffleQuestionOptions(q));
+        
+        // OPTIONAL: Also shuffle the order of questions
+    state.questions = shuffleArray(state.questions);
+        
+        console.log(`✓ Loaded ${state.questions.length} questions (options shuffled for each question)`);
     } else {
+        console.error("No questions found");
         state.questions = [];
     }
     showQuizScreen();
